@@ -1,6 +1,4 @@
 
-FF_PATH=/home/lz/important/f-stack
-FF_DPDK=/home/lz/important/f-stack/dpdk/x86_64-native-linuxapp-gcc
 FT_BINARY = libft.so
 FF_LIBS+= -L${FF_PATH}/lib -Wl,--whole-archive,-lfstack,--no-whole-archive
 FF_LIBS+= -L${FF_DPDK}/lib -Wl,--whole-archive,-ldpdk,--no-whole-archive

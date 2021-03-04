@@ -1,4 +1,4 @@
-TOPDIR=/home/lz/important/f-stack
+TOPDIR=/home/lz/f-stack
 
 ifeq ($(FF_PATH),)
 	FF_PATH=${TOPDIR}

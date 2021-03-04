@@ -82,7 +82,7 @@ void service(void *arg)
                 ret = ff_send(fmt_action->ds_send.fd, fmt_action->ds_send.buf, fmt_action->ds_send.nbyte, fmt_action->ds_send.flags);
                 fmt_action->ds_send.flag = 0;
 
-                // printf("ff_send buf:[%s]\n", fmt_action->ds_send.buf);
+                //printf("ff_send buf:[%s]\n", fmt_action->ds_send.buf);
                 fmtr_action->ds_send.ret = ret;
                 fmtr_action->ds_send.flag = 1;
             }
@@ -149,7 +149,75 @@ void service(void *arg)
 
             fmt_action->ds_form.flag = 0;
             break;
+        case WRITE:
+            while (1)
+            {
+                if (fmt_action->ds_write.flag == 1)
+                {
+                    break;
+                }
+            }
+            //printf("ff_write buf:[%s]\n",fmt_action->ds_write.buf);
+            ret = ff_write(fmt_action->ds_write.fd, fmt_action->ds_write.buf, fmt_action->ds_write.nbyte);
+            fmt_action->ds_write.flag = 0;
 
+            fmtr_action->ds_write.ret = ret;
+            fmtr_action->ds_write.flag = 1;
+
+            fmt_action->ds_form.flag = 0;
+            break;
+        case READ:
+            while (1)
+            {
+                if (fmt_action->ds_read.flag == 1)
+                {
+                    break;
+                }
+            }
+            ret = ff_read(fmt_action->ds_read.fd, fmt_action->ds_read.buf, fmt_action->ds_read.nbyte);
+            fmt_action->ds_read.flag = 0;
+
+            fmtr_action->ds_read.ret = ret;
+            strcpy(fmtr_action->ds_read.buf, fmt_action->ds_read.buf);
+            fmtr_action->ds_read.flag = 1;
+
+            fmt_action->ds_form.flag = 0;
+            break;
+        case GETSOCKOPT:
+            printf("getsockopt \n");
+            while (1)
+            {
+                if (fmt_action->ds_getsockopt.flag == 1)
+                {
+                    break;
+                }
+            }
+            ret = ff_getsockopt(fmt_action->ds_getsockopt.fd, fmt_action->ds_getsockopt.level, fmt_action->ds_getsockopt.option_name, fmt_action->ds_getsockopt.option_value, &fmt_action->ds_getsockopt.option_len);
+            fmt_action->ds_getsockopt.flag = 0;
+
+            fmtr_action->ds_getsockopt.ret = ret;
+            strcpy(fmtr_action->ds_getsockopt.option_value, fmt_action->ds_getsockopt.option_value);
+            fmtr_action->ds_getsockopt.flag = 1;
+
+            fmt_action->ds_form.flag = 0;
+            break;
+        case SELECT:
+            printf("select \n");
+            while (1)
+            {
+                if (fmt_action->ds_select.flag == 1)
+                {
+                    break;
+                }
+            }
+            ret = ff_select(fmt_action->ds_select.nfds, &fmt_action->ds_select.readfds, &fmt_action->ds_select.writefds, &fmt_action->ds_select.exceptfds, &fmt_action->ds_select.timeout);
+            fmt_action->ds_select.flag = 0;
+            printf("ff_select ret:%d\n", ret);
+            fmtr_action->ds_select.ret = ret;
+            fmtr_action->ds_select.flag = 1;
+
+            fmt_action->ds_form.flag = 0;
+            break;
         case CLOSE:
             while (1)
             {
@@ -166,6 +234,7 @@ void service(void *arg)
 
             fmt_action->ds_form.flag = 0;
             running = 1;
+            udp_status = 0;
             break;
 
         default:
@@ -272,7 +341,7 @@ void service_epoll(void *arg)
                 {
                     if (fmt_action->ds_accept.flag == 1 && fmt_action->ds_accept.fd > 0)
                     {
-                        // printf("accept while events[%d].data.fd:%d\n", i, events[i].data.fd);
+                        printf("accept while events[%d].data.fd:%d\n", i, events[i].data.fd);
                         int ret = ff_accept(fmt_action->ds_accept.fd, (struct linux_sockaddr *)&(fmt_action->ds_accept.addr), &fmt_action->ds_accept.addrlen);
                         if (ret < 0)
                         {
@@ -324,7 +393,7 @@ void service_epoll(void *arg)
                                     ret = ff_send(fmt_action->ds_send.fd, fmt_action->ds_send.buf, fmt_action->ds_send.nbyte, fmt_action->ds_send.flags);
                                     fmt_action->ds_send.flag = 0;
 
-                                    // printf("ff_send buf:[%s]\n", fmt_action->ds_send.buf);
+                                    printf("ff_send buf:[%s]\n", fmt_action->ds_send.buf);
                                     fmtr_action->ds_send.ret = ret;
                                     fmtr_action->ds_send.flag = 1;
                                 }
@@ -332,6 +401,7 @@ void service_epoll(void *arg)
                                 running_epoll = 0;
                                 break;
                             case RECV:
+                                printf("tcp server epoll ff_recv \n");
                                 while (1)
                                 {
                                     if (fmt_action->ds_recv.flag == 1)
@@ -347,7 +417,7 @@ void service_epoll(void *arg)
                                         ret = ff_recv(fmt_action->ds_recv.fd, fmt_action->ds_recv.buffer, fmt_action->ds_recv.length, fmt_action->ds_recv.flags);
                                     }
                                     fmt_action->ds_recv.flag = 0;
-                                    // printf("ff_recv buf:[%s]  ret:%d\n", fmt_action->ds_recv.buffer, ret);
+                                    printf("ff_recv buf:[%s]  ret:%d\n", fmt_action->ds_recv.buffer, ret);
                                     fmtr_action->ds_recv.fd = fmt_action->ds_recv.fd;
                                     strcpy(fmtr_action->ds_recv.buffer, fmt_action->ds_recv.buffer);
                                     fmtr_action->ds_recv.ret = ret;
@@ -355,7 +425,75 @@ void service_epoll(void *arg)
                                 }
                                 fmt_action->ds_form.flag = 0;
                                 break;
+                            case WRITE:
+                                while (1)
+                                {
+                                    if (fmt_action->ds_write.flag == 1)
+                                    {
+                                        break;
+                                    }
+                                }
+                                //printf("ff_write buf:[%s]\n",fmt_action->ds_write.buf);
+                                ret = ff_write(fmt_action->ds_write.fd, fmt_action->ds_write.buf, fmt_action->ds_write.nbyte);
+                                fmt_action->ds_write.flag = 0;
 
+                                fmtr_action->ds_write.ret = ret;
+                                fmtr_action->ds_write.flag = 1;
+
+                                fmt_action->ds_form.flag = 0;
+                                break;
+                            case READ:
+                                while (1)
+                                {
+                                    if (fmt_action->ds_read.flag == 1)
+                                    {
+                                        break;
+                                    }
+                                }
+                                ret = ff_read(fmt_action->ds_read.fd, fmt_action->ds_read.buf, fmt_action->ds_read.nbyte);
+                                fmt_action->ds_read.flag = 0;
+
+                                fmtr_action->ds_read.ret = ret;
+                                strcpy(fmtr_action->ds_read.buf, fmt_action->ds_read.buf);
+                                fmtr_action->ds_read.flag = 1;
+
+                                fmt_action->ds_form.flag = 0;
+                                break;
+                            case GETSOCKOPT:
+                                printf("getsockopt \n");
+                                while (1)
+                                {
+                                    if (fmt_action->ds_getsockopt.flag == 1)
+                                    {
+                                        break;
+                                    }
+                                }
+                                ret = ff_getsockopt(fmt_action->ds_getsockopt.fd, fmt_action->ds_getsockopt.level, fmt_action->ds_getsockopt.option_name, fmt_action->ds_getsockopt.option_value, &fmt_action->ds_getsockopt.option_len);
+                                fmt_action->ds_getsockopt.flag = 0;
+
+                                fmtr_action->ds_getsockopt.ret = ret;
+                                strcpy(fmtr_action->ds_getsockopt.option_value, fmt_action->ds_getsockopt.option_value);
+                                fmtr_action->ds_getsockopt.flag = 1;
+
+                                fmt_action->ds_form.flag = 0;
+                                break;
+                            case SELECT:
+                                printf("select \n");
+                                while (1)
+                                {
+                                    if (fmt_action->ds_select.flag == 1)
+                                    {
+                                        break;
+                                    }
+                                }
+                                ret = ff_select(fmt_action->ds_select.nfds, &fmt_action->ds_select.readfds, &fmt_action->ds_select.writefds, &fmt_action->ds_select.exceptfds, &fmt_action->ds_select.timeout);
+                                fmt_action->ds_select.flag = 0;
+                                printf("ff_select ret:%d\n", ret);
+                                fmtr_action->ds_select.ret = ret;
+                                fmtr_action->ds_select.flag = 1;
+
+                                fmt_action->ds_form.flag = 0;
+                                break;
                             case CLOSE:
                                 while (1)
                                 {
@@ -401,15 +539,15 @@ void preparatory_work(void *arg)
                         break;
                     }
                 }
-
                 ret = ff_socket(fmt_action->ds_socket.doamin, fmt_action->ds_socket.type, fmt_action->ds_socket.protocol);
                 fmt_action->ds_socket.flag = 0;
-    
+
                 fmtr_action->ds_socket.ret = ret;
                 fmtr_action->ds_socket.flag = 1;
                 if (fmt_action->ds_socket.type == SOCK_DGRAM)
                     udp_status = 1;
                 fmt_action->ds_form.flag = 0;
+                fmtr_action->ds_socket.flag = 1;
                 break;
             case CONNECT:
                 while (1)
@@ -425,7 +563,6 @@ void preparatory_work(void *arg)
                     ff_ioctl(fmt_action->ds_connect.fd, 0x5421, &on);
                     ret = ff_connect(fmt_action->ds_connect.fd, (const struct linux_sockaddr *)&(fmt_action->ds_connect.address), sizeof(fmt_action->ds_connect.address));
                     fmt_action->ds_connect.flag = 0;
-                    printf("ret:%d\n", ret);
                     ret = 0;
                     fmtr_action->ds_connect.flag = 1;
                     fmtr_action->ds_connect.ret = ret;
@@ -491,6 +628,7 @@ void preparatory_work(void *arg)
                 break;
 
             case CLOSE:
+                printf("close flag:%d\n", fmt_action->ds_close.flag);
                 while (1)
                 {
                     if (fmt_action->ds_close.flag == 1)
@@ -507,6 +645,59 @@ void preparatory_work(void *arg)
 
                 fmt_action->ds_form.flag = 0;
                 running = 1;
+                break;
+            case SELECT:
+                printf("select \n");
+                while (1)
+                {
+                    if (fmt_action->ds_select.flag == 1)
+                    {
+                        break;
+                    }
+                }
+                ret = ff_select(fmt_action->ds_select.nfds, &fmt_action->ds_select.readfds, &fmt_action->ds_select.writefds, &fmt_action->ds_select.exceptfds, &fmt_action->ds_select.timeout);
+                fmt_action->ds_select.flag = 0;
+
+                fmtr_action->ds_select.ret = ret;
+                fmtr_action->ds_select.flag = 1;
+
+                fmt_action->ds_form.flag = 0;
+                break;
+            case SETSOCKOPT:
+                printf("setsockopt \n");
+                while (1)
+                {
+                    if (fmt_action->ds_setsockopt.flag == 1)
+                    {
+                        break;
+                    }
+                }
+                ret = ff_setsockopt(fmt_action->ds_setsockopt.fd, fmt_action->ds_setsockopt.level, fmt_action->ds_setsockopt.option_name, fmt_action->ds_setsockopt.option_value, fmt_action->ds_setsockopt.option_len);
+                fmt_action->ds_setsockopt.flag = 0;
+
+                fmtr_action->ds_setsockopt.ret = ret;
+                strcpy(fmtr_action->ds_setsockopt.option_value, fmt_action->ds_setsockopt.option_value);
+                fmtr_action->ds_setsockopt.flag = 1;
+
+                fmt_action->ds_form.flag = 0;
+                break;
+            case GETSOCKOPT:
+                printf("getsockopt \n");
+                while (1)
+                {
+                    if (fmt_action->ds_getsockopt.flag == 1)
+                    {
+                        break;
+                    }
+                }
+                ret = ff_getsockopt(fmt_action->ds_getsockopt.fd, fmt_action->ds_getsockopt.level, fmt_action->ds_getsockopt.option_name, fmt_action->ds_getsockopt.option_value, &fmt_action->ds_getsockopt.option_len);
+                fmt_action->ds_getsockopt.flag = 0;
+
+                fmtr_action->ds_getsockopt.ret = ret;
+                strcpy(fmtr_action->ds_getsockopt.option_value, fmt_action->ds_getsockopt.option_value);
+                fmtr_action->ds_getsockopt.flag = 1;
+
+                fmt_action->ds_form.flag = 0;
                 break;
 
             default:

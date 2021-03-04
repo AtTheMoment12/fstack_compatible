@@ -77,8 +77,8 @@ void ft_hook_free_fd(int fd)
 
 int ioctl(int fd, unsigned long cmd, ...)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+
     va_list ap;
     va_start(ap, cmd);
     void *arg = va_arg(ap, void *);
@@ -106,9 +106,10 @@ int ioctl(int fd, unsigned long cmd, ...)
 
 int socket(int domain, int type, int protocol)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+
     int fd = ft_hook_socket(domain, type, protocol);
+    printf("socket fd : %d \n", fd);
     if (fd < 0)
     {
         return fd;
@@ -118,21 +119,24 @@ int socket(int domain, int type, int protocol)
 
 int close(int fd)
 {
-    printf("[FT_HOOK] %s,%d fd:%d\n",__FUNCTION__,__LINE__,fd);
-     
-    return ft_hook_close(fd);
+    printf("[FT_HOOK] %s,%d fd:%d\n", __FUNCTION__, __LINE__, fd);
+    usleep(1000);
+    int ret = ft_hook_close(fd);
+    printf("[FT_HOOK] %s,%d fd:%d ret:%d\n", __FUNCTION__, __LINE__, fd,ret);
+    return ret;
 }
 
 int connect(int fd, const struct sockaddr *address, socklen_t address_len)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
-    return ft_hook_connect(fd, address, address_len);
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+    int ret = ft_hook_connect(fd, address, address_len);
+    printf("[FT_HOOK] %s,%d ret:%d\n", __FUNCTION__, __LINE__,ret);
+    return ret;
 }
 ssize_t read(int fd, void *buf, size_t nbyte)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+/*
     ft_hook_syscall(read);
     FtHookFd *hook_fd = ft_hook_find_fd(fd);
     if (!ft_hook_active() || !hook_fd || !ft_ff_hook_active())
@@ -145,13 +149,14 @@ ssize_t read(int fd, void *buf, size_t nbyte)
         return ft_hook_read(fd, buf, nbyte);
     }
     //标注MtFrame::read
+    */
     return ft_hook_read(fd, buf, nbyte);
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
+    //printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+    /*
     ft_hook_syscall(write);
     FtHookFd *hook_fd = ft_hook_find_fd(fd);
     if (!ft_hook_active() || !hook_fd || !ft_ff_hook_active())
@@ -164,24 +169,37 @@ ssize_t write(int fd, const void *buf, size_t nbyte)
         return ft_hook_write(fd, buf, nbyte);
     }
     //标注MtFrame::write
-    return ft_hook_write(fd, buf, nbyte);
+    */
+    int ret = -1;
+    ret = ft_hook_write(fd, buf, nbyte);
+    if(ret == -1)
+    {
+        time_t start = time(NULL);
+        while (ret == -1 && (time(NULL) - start )< 0.01)
+        {
+            ret = ft_hook_write(fd, buf, nbyte);
+        }
+        
+    }
+    //printf("[FT_HOOK] %s,%d ret:%d\n", __FUNCTION__, __LINE__,ret);
+    return ret;
 }
 
 ssize_t sendto(int fd, const void *message, size_t length, int flags,
                const struct sockaddr *dest_addr, socklen_t dest_len)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
     return ft_hook_sendto(fd, message, length, flags, dest_addr, dest_len);
 }
 
 ssize_t recvfrom(int fd, void *buffer, size_t length, int flags,
                  struct sockaddr *address, socklen_t *address_len)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-    
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+
     int ret = -1;
     ret = ft_hook_recvfrom(fd, buffer, length, flags, address, address_len);
-    
+
     if (ret == -1)
     {
         time_t start = time(NULL);
@@ -195,8 +213,8 @@ ssize_t recvfrom(int fd, void *buffer, size_t length, int flags,
 
 ssize_t recv(int fd, void *buffer, size_t length, int flags)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+
     int ret = -1;
     ret = ft_hook_recv(fd, buffer, length, flags);
     if (ret == -1)
@@ -207,20 +225,38 @@ ssize_t recv(int fd, void *buffer, size_t length, int flags)
             ret = ft_hook_recv(fd, buffer, length, flags);
         }
     }
+    printf("[FT_HOOK] %s,%d ret:%d\n", __FUNCTION__, __LINE__,ret);
     return ret;
 }
 
 ssize_t send(int fd, const void *buf, size_t nbyte, int flags)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
-    return ft_hook_send(fd, buf, nbyte, flags);
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+    ssize_t ret = -1;
+    ret = ft_hook_send(fd, buf, nbyte, flags);
+    if(ret == -1)
+    {
+        time_t start = time(NULL);
+        while (ret == -1 && (time(NULL) - start) < 2)
+        {
+            ret = ft_hook_send(fd, buf, nbyte, flags);
+        }
+    }
+    printf("[FT_HOOK] %s,%d ret:%d\n", __FUNCTION__, __LINE__,ret);
+    return ret;
+}
+
+int getsockopt(int fd, int level, int option_name, void *option_value, socklen_t *option_len)
+{
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+    return ft_hook_getsockopt(fd, level, option_name, option_value, option_len);
 }
 
 int setsockopt(int fd, int level, int option_name, const void *option_value, socklen_t option_len)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+
+    /*
     ft_hook_syscall(setsockopt);
     FtHookFd *hook_fd = ft_hook_find_fd(fd);
     if (!ft_hook_active() || !hook_fd || !ft_ff_hook_active())
@@ -240,14 +276,16 @@ int setsockopt(int fd, int level, int option_name, const void *option_value, soc
             hook_fd->write_timeout = val->tv_sec * 1000 + val->tv_usec / 1000;
         }
     }
-
+    */
     return ft_hook_setsockopt(fd, level, option_name, option_value, option_len);
 }
 
+
+
 int fcntl(int fd, int cmd, ...)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+
     va_list ap;
     va_start(ap, cmd);
     void *arg = va_arg(ap, void *);
@@ -277,21 +315,27 @@ int fcntl(int fd, int cmd, ...)
 
 int listen(int sockfd, int backlog)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+
     return ft_hook_listen(sockfd, backlog);
 }
 
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+
     return ft_hook_bind(sockfd, addr, addrlen);
 }
 
 int accept(int fd, struct sockaddr *addr, socklen_t *addrlen)
 {
-    printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
-     
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+
     return ft_hook_accept(fd, addr, addrlen);
+}
+
+int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
+{
+    printf("[FT_HOOK] %s,%d\n", __FUNCTION__, __LINE__);
+    return ft_hook_select(nfds, readfds, writefds, exceptfds, timeout);
 }

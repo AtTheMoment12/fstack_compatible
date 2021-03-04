@@ -6,6 +6,7 @@
 #include <dlfcn.h>
 #include "ff_api.h"
 
+
 typedef int (*func_socket)(int domain, int type, int protocol);
 typedef int (*func_bind)(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 typedef int (*func_listen)(int sockfd, int backlog);
@@ -23,8 +24,10 @@ typedef ssize_t (*func_recv)(int socket, void *buffer, size_t length, int flags)
 typedef int (*func_select)(int nfds, fd_set *readfds, fd_set *writefds,
                         fd_set *exceptfds, struct timeval *timeout);
 typedef int (*func_poll)(struct pollfd fds[], nfds_t nfds, int timeout);
-typedef int (*func_setsockopt)(int socket, int level, int option_name,
-			            const void *option_value, socklen_t option_len);
+//typedef int (*func_setsockopt)(int socket, int level, int option_name,
+//			            const void *option_value, socklen_t option_len);                        
+//typedef int (*func_getsockopt)(int socket, int level, int option_name,
+//			            void *option_value, socklen_t option_len);
 typedef int (*func_ioctl)(int fd, unsigned long cmd, ...);
 typedef int (*func_fcntl)(int fd, int cmd, ...);
 
@@ -43,7 +46,8 @@ typedef struct ft_syscall_func_tab
     func_recvfrom           real_recvfrom;
     func_send               real_send;
     func_recv               real_recv;
-    func_setsockopt         real_setsockopt;
+    //func_setsockopt         real_setsockopt;
+    //func_getsockopt         real_getsockopt;
     func_fcntl              real_fcntl;
     func_ioctl              real_ioctl;
     

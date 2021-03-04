@@ -25,6 +25,7 @@ int shmid, shmid_ret;
 FMT *fmt_action, *fmtr_action;
 int ft_init()
 {
+	printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
 	shmid = shmget((key_t)1000, sizeof(FMT), 0666 | IPC_CREAT);
 	if (shmid == -1)
 	{
@@ -46,11 +47,12 @@ int ft_hook_socket(int domain, int type, int protocol)
 	{
 		ft_init();
 	}
-
+	/*
 	if ((AF_INET != domain) || (SOCK_STREAM != type && SOCK_DGRAM != type))
 	{
 		return ft_real_func(socket)(domain, type, protocol);
 	}
+	*/
 	while (1)
 	{
 		if(fmt_action->ds_form.flag == 0){
@@ -59,11 +61,11 @@ int ft_hook_socket(int domain, int type, int protocol)
 			break;
 		}
 	}
-
 	fmt_action->ds_socket.flag = 1;
 	fmt_action->ds_socket.doamin = domain;
 	fmt_action->ds_socket.type = type;
 	fmt_action->ds_socket.protocol = protocol;
+	
 	while (1)
 	{
 		if (fmtr_action->ds_socket.flag == 1)
@@ -76,7 +78,7 @@ int ft_hook_socket(int domain, int type, int protocol)
 
 int ft_hook_close(int fd)
 {
-	// printf("ft_hook_close flag :%d\n",fmt_action->ds_form.flag);
+	printf("ft_hook_close flag :%d\n",fmt_action->ds_form.flag);
 	while (1)
 	{
 		if(fmt_action->ds_form.flag == 0){
@@ -93,6 +95,7 @@ int ft_hook_close(int fd)
 		if(fmtr_action->ds_close.flag == 1)
 		{
 			fmtr_action->ds_close.flag = 0;
+			printf("ff_close ret:%d\n",fmtr_action->ds_close.ret);
 			return fmtr_action->ds_close.ret;
 		}
 	}
@@ -131,7 +134,7 @@ int ft_hook_connect(int fd, const struct sockaddr *address, socklen_t addrlen_le
 
 ssize_t ft_hook_read(int fd, void *buf, size_t nbyte)
 {
-
+	/*
 	if (ff_fdisused(fd))
 	{
 		return ff_read(fd, buf, nbyte);
@@ -140,11 +143,36 @@ ssize_t ft_hook_read(int fd, void *buf, size_t nbyte)
 	{
 		return ft_real_func(read)(fd, buf, nbyte);
 	}
+	*/
+	while (1)
+	{
+		if(fmt_action->ds_form.flag == 0)
+		{
+			fmt_action->ds_form.flag = 1;
+			break;
+		}
+	}
+	fmt_action->ds_read.fd = fd;
+	strcpy(fmt_action->ds_read.buf,buf);
+	fmt_action->ds_read.nbyte = nbyte;
+	fmt_action->ds_read.flag = 1;
+
+	while (1)
+	{
+		if(fmtr_action->ds_read.flag == 1)
+		{
+			strcpy(buf,fmtr_action->ds_read.buf);
+			fmtr_action->ds_read.flag = 0;
+			return fmtr_action->ds_read.ret;
+		}
+	}
+	
+	
 }
 
 ssize_t ft_hook_write(int fd, const void *buf, size_t nbyte)
 {
-
+	/*
 	if (ff_fdisused(fd))
 	{
 		return ff_write(fd, buf, nbyte);
@@ -153,6 +181,32 @@ ssize_t ft_hook_write(int fd, const void *buf, size_t nbyte)
 	{
 		return ft_real_func(write)(fd, buf, nbyte);
 	}
+	*/
+	while (1)
+	{
+		if(fmt_action->ds_form.flag == 0)
+		{
+			fmt_action->ds_form.flag = 1;
+			fmt_action->ds_form.form = WRITE;
+			break;
+		}
+	}
+	fmt_action->ds_write.fd = fd;
+	strcpy(fmt_action->ds_write.buf,buf);
+	fmt_action->ds_write.nbyte = nbyte;
+	fmt_action->ds_write.flag = 1;
+
+	while (1)
+	{
+		if(fmtr_action->ds_write.flag == 1)
+		{
+			fmtr_action->ds_write.flag = 0;
+			return fmtr_action->ds_write.ret;
+		}
+	}
+	
+
+	
 }
 ssize_t ft_hook_sendto(int fd, const void *message, size_t length, int flags,
 					   const struct sockaddr *dest_addr, socklen_t dest_len)
@@ -240,7 +294,7 @@ ssize_t ft_hook_recv(int fd, void *buffer, size_t length, int flags)
 	fmt_action->ds_recv.flags = flags;
 	strcpy(fmt_action->ds_recv.buffer, buffer);
 	fmt_action->ds_recv.flag = 1;
-	while ((1))
+	while (1)
 	{
 		if (fmtr_action->ds_recv.flag == 1)
 		{
@@ -278,6 +332,7 @@ ssize_t ft_hook_send(int fd, const void *buf, size_t nbyte, int flags)
 }
 int ft_hook_setsockopt(int fd, int level, int option_name, const void *option_value, socklen_t option_len)
 {
+	/*
 	if (ff_fdisused(fd))
 	{
 		return ff_setsockopt(fd, level, option_name, option_value, option_len);
@@ -286,8 +341,64 @@ int ft_hook_setsockopt(int fd, int level, int option_name, const void *option_va
 	{
 		return ft_real_func(setsockopt)(fd, level, option_name, option_value, option_len);
 	}
-}
+	*/
+	while (1)
+	{
+		if(fmt_action->ds_form.flag == 0)
+		{
+			fmt_action->ds_form.flag = 1;
+			fmt_action->ds_form.form = SETSOCKOPT;
+			break;
+		}
+	}
+	fmt_action->ds_setsockopt.fd = fd;
+	fmt_action->ds_setsockopt.level = level;
+	fmt_action->ds_setsockopt.option_name = option_name;
+	strcpy(fmt_action->ds_setsockopt.option_value,option_value);
+	fmt_action->ds_setsockopt.option_len = option_len;
+	fmt_action->ds_setsockopt.flag = 1;
 
+	while (1)
+	{
+		if(fmtr_action->ds_setsockopt.flag == 1)
+		{
+			fmtr_action->ds_setsockopt.flag = 0;
+			//strcpy(option_value,fmtr_action->ds_setsockopt.option_value);
+			return fmtr_action->ds_setsockopt.ret;
+		}
+	}
+	
+}
+int ft_hook_getsockopt(int fd, int level, int option_name, void *option_value, socklen_t *option_len)
+{
+	while (1)
+	{
+		if(fmt_action->ds_form.flag == 0)
+		{
+			fmt_action->ds_form.flag = 1;
+			fmt_action->ds_form.form = GETSOCKOPT;
+			break;
+		}
+	}
+	fmt_action->ds_getsockopt.fd = fd;
+	fmt_action->ds_getsockopt.level = level;
+	fmt_action->ds_getsockopt.option_name = option_name;
+	strcpy(fmt_action->ds_getsockopt.option_value,option_value);
+	fmt_action->ds_getsockopt.option_len = sizeof(fmt_action->ds_getsockopt.option_value);
+	fmt_action->ds_getsockopt.flag = 1;
+
+	while (1)
+	{
+		if(fmtr_action->ds_getsockopt.flag == 1)
+		{
+			fmtr_action->ds_getsockopt.flag = 0;
+			strcpy(option_value, fmtr_action->ds_getsockopt.option_value);
+			return fmtr_action->ds_getsockopt.ret;
+		}
+	}
+	
+	
+}
 int ft_hook_ioctl(int fd, int cmd, void *arg)
 {
 
@@ -396,4 +507,37 @@ int ft_hook_accept(int fd, struct sockaddr *addr, socklen_t *addrlen)
 			return fmtr_action->ds_accept.ret;
 		}
 	}
+}
+
+
+int ft_hook_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,struct timeval *timeout)
+{
+	while (1)
+	{
+		if(fmt_action->ds_form.flag == 0)
+		{
+			fmt_action->ds_form.flag = 1;
+			fmt_action->ds_form.form = SELECT;
+			break;
+		}
+	}
+	
+	fmt_action->ds_select.nfds = nfds;
+	memcpy(&fmt_action->ds_select.readfds,&readfds,sizeof(fd_set));
+	memcpy(&fmt_action->ds_select.writefds,&writefds,sizeof(fd_set));
+	memcpy(&fmt_action->ds_select.exceptfds,&exceptfds,sizeof(fd_set));
+	fmt_action->ds_select.timeout.tv_sec = timeout->tv_sec;
+	fmt_action->ds_select.timeout.tv_usec = timeout->tv_usec;
+	fmt_action->ds_select.flag = 1;
+
+	while (1)
+	{
+		if(fmtr_action->ds_select.flag == 1)
+		{
+			fmtr_action->ds_select.flag = 0;
+			return fmtr_action->ds_select.ret;
+		}
+	}
+	
+
 }
