@@ -109,7 +109,6 @@ int loop(void *arg)
 
 int main(int argc, char * argv[])
 {
-	printf("11111111111111111111111111111\n");
     ff_init(argc, argv);
 
     assert((kq = ff_kqueue()) > 0);

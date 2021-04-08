@@ -177,7 +177,7 @@ cc -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -o objs/autotest objs/autotest.c
 ----------------------------------------
 checking for crypt()
 
-/tmp/ccuc2I6Y.o: In function `main':
+/tmp/ccPIroU2.o: In function `main':
 autotest.c:(.text+0xf): undefined reference to `crypt'
 collect2: error: ld returned 1 exit status
 ----------
@@ -288,7 +288,7 @@ checking for statvfs()
 ----------------------------------------
 checking for dlopen()
 
-/tmp/cckBke6w.o: In function `main':
+/tmp/cc4TwTvq.o: In function `main':
 autotest.c:(.text+0xf): undefined reference to `dlopen'
 autotest.c:(.text+0x1e): undefined reference to `dlsym'
 collect2: error: ld returned 1 exit status
@@ -423,6 +423,26 @@ cc -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -o objs/autotest objs/autotest.c
 ----------------------------------------
 checking for IP_BIND_ADDRESS_NO_PORT
 
+objs/autotest.c: In function 'main':
+objs/autotest.c:8:31: error: 'IP_BIND_ADDRESS_NO_PORT' undeclared (first use in this function)
+     setsockopt(0, IPPROTO_IP, IP_BIND_ADDRESS_NO_PORT, NULL, 0);
+                               ^
+objs/autotest.c:8:31: note: each undeclared identifier is reported only once for each function it appears in
+----------
+
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/socket.h>
+                  #include <netinet/in.h>
+
+int main(void) {
+    setsockopt(0, IPPROTO_IP, IP_BIND_ADDRESS_NO_PORT, NULL, 0);
+    return 0;
+}
+
+----------
+cc -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -o objs/autotest objs/autotest.c
+----------
 
 ----------------------------------------
 checking for IP_RECVDSTADDR
@@ -575,7 +595,7 @@ checking for AF_INET6
 ----------------------------------------
 checking for setproctitle()
 
-/tmp/ccd544cS.o: In function `main':
+/tmp/ccN5krjA.o: In function `main':
 autotest.c:(.text+0xf): undefined reference to `setproctitle'
 collect2: error: ld returned 1 exit status
 ----------
@@ -608,7 +628,7 @@ checking for pwritev()
 ----------------------------------------
 checking for sys_nerr
 
-/tmp/cctD1E8h.o: In function `main':
+/tmp/cc8vsUhR.o: In function `main':
 autotest.c:(.text+0x6): warning: `sys_nerr' is deprecated; use `strerror' or `strerror_r' instead
 135
 ----------------------------------------
@@ -642,7 +662,7 @@ checking for System V shared memory
 ----------------------------------------
 checking for POSIX semaphores
 
-/tmp/ccAslsR7.o: In function `main':
+/tmp/cc50M8st.o: In function `main':
 autotest.c:(.text+0x1a): undefined reference to `sem_init'
 autotest.c:(.text+0x32): undefined reference to `sem_destroy'
 collect2: error: ld returned 1 exit status

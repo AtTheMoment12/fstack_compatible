@@ -14,7 +14,7 @@
 #include <fcntl.h>
 
 #define MAX_EVENTS 512
-
+#define SHM_HUGE_1GB 1<<21
 int shmid, shmid_ret;
 FMT *fmt_action, *fmtr_action;
 int kq;
@@ -27,11 +27,13 @@ int running = 1, udp_status = 0;
 int ft_init(void)
 {
     shmid = shmget((key_t)1000, sizeof(FMT), IPC_CREAT);
+    //shmid = shmget((key_t)1000, sizeof(FMT), IPC_CREAT|SHM_HUGETLB|SHM_HUGE_1GB);
     if (shmid == -1)
     {
         perror("shmid shmget()");
     }
     shmid_ret = shmget((key_t)1001, sizeof(FMT), IPC_CREAT);
+    //shmid_ret = shmget((key_t)1001, sizeof(FMT), IPC_CREAT|SHM_HUGETLB|SHM_HUGE_1GB);
     if (shmid_ret == -1)
     {
         perror("shmid_ret shmget()");
@@ -138,8 +140,7 @@ void service(void *arg)
             }
             ret = ff_recvfrom(fmt_action->ds_recvfrom.fd, fmt_action->ds_recvfrom.buffer, fmt_action->ds_recvfrom.length, fmt_action->ds_recvfrom.flags, (struct linux_sockaddr *)&(fmt_action->ds_recvfrom.address), &fmt_action->ds_recvfrom.address_len);
             fmt_action->ds_recvfrom.flag = 0;
-            // printf("recvfrom msg is [%s] [%s,%d] ret:%d\n", fmt_action->ds_recvfrom.buffer, inet_ntoa(fmt_action->ds_recvfrom.address.sin_addr), ntohs(fmt_action->ds_recvfrom.address.sin_port), ret);
-
+            //printf("recvfrom msg is [%s] [%s,%d] ret:%d\n", fmt_action->ds_recvfrom.buffer, inet_ntoa(fmt_action->ds_recvfrom.address.sin_addr), ntohs(fmt_action->ds_recvfrom.address.sin_port), ret);
             fmtr_action->ds_recvfrom.ret = ret;
             strcpy(fmtr_action->ds_recvfrom.buffer, fmt_action->ds_recvfrom.buffer);
             fmtr_action->ds_recvfrom.address.sin_addr = fmt_action->ds_recvfrom.address.sin_addr;
@@ -147,7 +148,7 @@ void service(void *arg)
             fmtr_action->ds_recvfrom.address.sin_port = fmt_action->ds_recvfrom.address.sin_port;
             fmtr_action->ds_recvfrom.flag = 1;
 
-            fmt_action->ds_form.flag = 0;
+			fmt_action->ds_form.flag = 0;
             break;
         case WRITE:
             while (1)
@@ -291,7 +292,7 @@ void service_epoll(void *arg)
                             }
                             ret = ff_recvfrom(fmt_action->ds_recvfrom.fd, fmt_action->ds_recvfrom.buffer, fmt_action->ds_recvfrom.length, fmt_action->ds_recvfrom.flags, (struct linux_sockaddr *)&(fmt_action->ds_recvfrom.address), &fmt_action->ds_recvfrom.address_len);
                             fmt_action->ds_recvfrom.flag = 0;
-                            // printf("recvfrom msg is [%s] [%s,%d] ret:%d\n", fmt_action->ds_recvfrom.buffer, inet_ntoa(fmt_action->ds_recvfrom.address.sin_addr), ntohs(fmt_action->ds_recvfrom.address.sin_port), ret);
+                            //printf("recvfrom msg is [%s] [%s,%d] ret:%d\n", fmt_action->ds_recvfrom.buffer, inet_ntoa(fmt_action->ds_recvfrom.address.sin_addr), ntohs(fmt_action->ds_recvfrom.address.sin_port), ret);
 
                             fmtr_action->ds_recvfrom.ret = ret;
                             strcpy(fmtr_action->ds_recvfrom.buffer, fmt_action->ds_recvfrom.buffer);

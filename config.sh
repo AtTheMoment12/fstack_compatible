@@ -7,5 +7,6 @@ mount -t hugetlbfs -o pagesize=1048576kB  none  /mnt/huge_1048576kB
 modprobe uio
 rmmod igb_uio
 insmod $RTE_SDK/$RTE_TARGET/kmod/igb_uio.ko
+ifconfig p4p2 down
 $RTE_SDK/usertools/dpdk-devbind.py --bind=igb_uio 0000:82:00.1
 

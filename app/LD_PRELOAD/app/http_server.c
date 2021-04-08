@@ -1,29 +1,24 @@
 #include <stdio.h>
-#include <sys/ioctl.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <strings.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <errno.h>
-#include <assert.h>
-
-char html[] =
+#include <unistd.h>
+#include <string.h>
+ 
+#define PORT 80
+#define BUFFER_SIZE 4096
+#define RESPONSE_HEADER "HTTP/1.1 200 OK\r\nConnection: close\r\nAccept-Ranges: bytes\r\nContent-Type: text/html\r\n\r\n"
+#define RESPONSE_BODY "<h1>Hello!</h1>"
+char html[] = 
 "HTTP/1.1 200 OK\r\n"
-"Server: F-Stack\r\n"
-"Date: Sat, 25 Feb 2017 09:26:33 GMT\r\n"
-"Content-Type: text/html\r\n"
-"Content-Length: 438\r\n"
-"Last-Modified: Tue, 21 Feb 2017 09:44:03 GMT\r\n"
-"Connection: keep-alive\r\n"
-"Accept-Ranges: bytes\r\n"
+"Server: TEST\r\n"
 "\r\n"
 "<!DOCTYPE html>\r\n"
 "<html>\r\n"
 "<head>\r\n"
-"<title>Welcome to F-Stack!</title>\r\n"
+"<title>Welcome to TEST_HOOK!</title>\r\n"
 "<style>\r\n"
 "    body {  \r\n"
 "        width: 35em;\r\n"
@@ -36,38 +31,61 @@ char html[] =
 "<h1>Welcome to TEST_HOOK!</h1>\r\n"
 "\r\n"
 "<p>For online documentation and support please refer to\r\n"
-"<a href=\"http://F-Stack.org/\">F-Stack.org</a>.<br/>\r\n"
 "\r\n"
-"<p><em>Thank you for using F-Stack.</em></p>\r\n"
+"<p><em>Thank you for using FT_HOOK!.</em></p>\r\n"
 "</body>\r\n"
 "</html>";
-
-
-int main(int argc,char * argv[])
-{
-    int sockfd = socket(AF_INET,SOCK_STREAM,0);
-
-    struct sockaddr_in my_addr;
-    my_addr.sin_family = AF_INET;
-    my_addr.sin_port = htons(80);
-    my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    int ret = bind(sockfd,(struct sockaddr *)&my_addr,sizeof(my_addr));
-    if(ret < 0)
-    {
-        printf("bind failed\n");
-        exit(1);
+int handle(int conn){
+  int len = 0;
+  char buffer[BUFFER_SIZE];
+  char *pos = buffer;
+  bzero(buffer, BUFFER_SIZE);
+  len = recv(conn, buffer, BUFFER_SIZE, 0);
+  if (len <= 0 ) {
+    printf ("recv error");
+    return -1;
+  } else {
+   // printf("Debug request:\n--------------\n%s\n\n",buffer);
+  }
+ 
+  send(conn,  html, sizeof(html), 0);
+  close(conn);//关闭连接
+}
+ 
+int main(int argc,char *argv[]){
+  int port = PORT;
+  struct sockaddr_in client_sockaddr;   
+  struct sockaddr_in server_sockaddr;
+  int listenfd = socket(AF_INET,SOCK_STREAM,0);
+  int opt = 1; 
+  int conn;
+  socklen_t length = sizeof(struct sockaddr_in);
+  setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int));
+  server_sockaddr.sin_family = AF_INET;
+  server_sockaddr.sin_port = htons(port);
+  server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+ 
+  if(bind(listenfd,(struct sockaddr *)&server_sockaddr,sizeof(server_sockaddr))==-1){
+    printf("bind error!\n");
+    return -1;  
+  } 
+ 
+  if(listen(listenfd, 10) < 0) {
+    printf("listen failed!\n");
+    return -1;  
+  }
+ 
+  while(1){
+    conn = accept(listenfd, (struct sockaddr*)&client_sockaddr, &length);
+    if(conn < 0){
+      printf("connect error!\n");
+      continue;
     }
-
-    ret = listen(sockfd,5);
-    accept(sockfd,NULL,NULL);
-    while(1)
-    {
-        char buf[256];
-        size_t readlen = read(sockfd,buf,sizeof(buf));
-        if(readlen>0)
-        {
-            write(sockfd,html,sizeof(html)-1);
-        }
-    }
+    if (handle(conn) < 0) {
+      printf("connect error!\n");
+      close(conn);
+      continue;
+    } 
+  }
+  return 0;
 }

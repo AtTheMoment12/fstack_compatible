@@ -20,18 +20,20 @@
 #include "ff_api.h"
 #include "ft_sys_hook.h"
 #include "ft_hook.h"
-
+#define SHM_HUGE_1GB 1<<21
 int shmid, shmid_ret;
 FMT *fmt_action, *fmtr_action;
 int ft_init()
 {
 	printf("[FT_HOOK] %s,%d\n",__FUNCTION__,__LINE__);
 	shmid = shmget((key_t)1000, sizeof(FMT), 0666 | IPC_CREAT);
+	//shmid = shmget((key_t)1000, sizeof(FMT), 0666 | IPC_CREAT | SHM_HUGETLB | SHM_HUGE_1GB);
 	if (shmid == -1)
 	{
 		perror("shmid shmget()");
 	}
 	shmid_ret = shmget((key_t)1001, sizeof(FMT), 0666 | IPC_CREAT);
+	//shmid_ret = shmget((key_t)1001, sizeof(FMT), 0666 | IPC_CREAT | SHM_HUGETLB | SHM_HUGE_1GB);
 	if (shmid_ret == -1)
 	{
 		perror("shmid ret shmget()");
@@ -273,7 +275,7 @@ ssize_t ft_hook_recvfrom(int fd, void *buffer, size_t length, int flags,
 			ser->sin_port = fmtr_action->ds_recvfrom.address.sin_port;
 			address = (struct sockaddr *)&ser;
 			fmtr_action->ds_recvfrom.flag = 0;
-			// printf("recvfrom msg is [%s] [%s,%d]\n",buffer,inet_ntoa(fmt_action->ds_recvfrom.address.sin_addr),ntohs(fmt_action->ds_recvfrom.address.sin_port));
+			//printf("recvfrom msg is [%s] [%s,%d] ret:%d\n",buffer,inet_ntoa(fmt_action->ds_recvfrom.address.sin_addr),ntohs(fmt_action->ds_recvfrom.address.sin_port),fmtr_action->ds_recvfrom.ret);
 			return fmtr_action->ds_recvfrom.ret;
 		}
 	}

@@ -4,7 +4,7 @@ CFLAGS =  -pipe  -Os -W -Wall -Wpointer-arith -Wno-unused-parameter -Werror -g
 CPP =	cc -E
 LINK =	$(CC)
 
-CFLAGS += -I/home/lz/important/f-stack/lib
+CFLAGS += -I/home/lz/f-stack/lib
 
 
 ALL_INCS = -I src/core \
@@ -354,7 +354,7 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/http/modules/ngx_http_upstream_keepalive_module.o \
 	objs/src/http/modules/ngx_http_upstream_zone_module.o \
 	objs/ngx_modules.o \
-	-ldl -lpthread -lcrypt -lpcre -lz -L/home/lz/important/f-stack/lib -Wl,--whole-archive,-lfstack,--no-whole-archive -L/home/lz/important/f-stack/dpdk/x86_64-native-linuxapp-gcc/lib -Wl,--whole-archive,-ldpdk,--no-whole-archive -Wl,--no-whole-archive -lrt -lm -ldl -lcrypto -lpthread -lnuma \
+	-ldl -lpthread -lcrypt -lpcre -lz -L/home/lz/f-stack/lib -Wl,--whole-archive,-lfstack,--no-whole-archive -L/home/lz/f-stack/dpdk/x86_64-native-linuxapp-gcc/lib -Wl,--whole-archive,-ldpdk,--no-whole-archive -Wl,--no-whole-archive -lrt -lm -ldl -lcrypto -lpthread -lnuma \
 	-Wl,-E
 	
 

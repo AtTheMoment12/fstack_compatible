@@ -1,7 +1,7 @@
 #define NGX_CONFIGURE " --prefix=/usr/local/nginx_fstack --with-ff_module"
 
 #ifndef NGX_COMPILER
-#define NGX_COMPILER  "gcc 4.8.5 20150623 (Red Hat 4.8.5-39) (GCC) "
+#define NGX_COMPILER  "gcc 4.8.5 20150623 (Red Hat 4.8.5-11) (GCC) "
 #endif
 
 
@@ -135,11 +135,6 @@
 
 #ifndef NGX_HAVE_TRANSPARENT_PROXY
 #define NGX_HAVE_TRANSPARENT_PROXY  1
-#endif
-
-
-#ifndef NGX_HAVE_IP_BIND_ADDRESS_NO_PORT
-#define NGX_HAVE_IP_BIND_ADDRESS_NO_PORT  1
 #endif
 
 

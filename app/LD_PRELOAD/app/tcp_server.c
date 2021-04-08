@@ -10,9 +10,7 @@
 
 int main()
 {
-	printf("[debug] main socket start ========================================\n");
     int sockfd=socket(AF_INET,SOCK_STREAM,0);
-	printf("[debug] main socket end ==========================================\n");
     assert(sockfd!=-1);
     struct sockaddr_in ser,cli;
     memset(&ser,0,sizeof(ser));
@@ -20,9 +18,7 @@ int main()
     ser.sin_family=AF_INET;
     ser.sin_port=htons(6000);
     ser.sin_addr.s_addr=inet_addr("0.0.0.0");
-	printf("[debug] main bind start \n");
     int res=bind(sockfd,(struct sockaddr*)&ser,sizeof(ser));
-	printf("[debug] main bind end \n");
     assert(res!=-1);
     
     listen(sockfd,5);

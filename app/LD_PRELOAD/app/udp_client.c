@@ -39,22 +39,20 @@ int main(int argc, char *argv[])
     sendto(sockfd, argv[2], strlen(argv[2]), 0, (struct sockaddr *)&server, sizeof(server));
     socklen_t len;
     len = sizeof(server);
-	printf("0\n");
     while(1)
     {
-		printf("1\n");
         if((num = recvfrom(sockfd, buf, MAXDATASIZE, 0, (struct sockaddr *)&peer, &len)) == -1)
         {
             printf("recvfrom() error\n");
             exit(1);
         }
-		printf("2\n");
-
+/*
         if(len != sizeof(server) || memcmp((const void *)&server, (const void *)&peer, len) != 0 )
         {
             printf("Receive message from other server.\n");
             continue;
         }
+		*/
         buf[num] = '\0';
         printf("Server Message: %s.\n", buf);
         break;
